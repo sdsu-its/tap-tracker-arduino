@@ -125,7 +125,7 @@ void setup()
   digitalWrite(B1G, LOW);
   digitalWrite(B1R, HIGH);
 
-  attachInterrupt(digitalPinToInterrupt(BTN1), tap, RISING);
+  attachInterrupt(digitalPinToInterrupt(BTN1), tap, FALLING);
 
 #ifndef SINGLE_BUTTON_MODE
   pinMode(BTN2, INPUT_PULLUP);
@@ -136,7 +136,7 @@ void setup()
   digitalWrite(B2G, LOW);
   digitalWrite(B2R, HIGH);
 
-  attachInterrupt(digitalPinToInterrupt(BTN2), tap, RISING);
+  attachInterrupt(digitalPinToInterrupt(BTN2), tap, FALLING);
 #endif
 
   // We start by connecting to a WiFi network
@@ -345,12 +345,10 @@ void tap() {
 #endif
 
 #ifdef SINGLE_BUTTON_MODE
-    if (millis() - last_tap > 250 && millis() - last_event > TAP_LOCKOUT) {
-      tap_count = (tap_count + 1) % (MAX_TAPS + 1);
-      last_tap = millis();
-      Serial.println("TAP (" + String(tap_count) + ")!");
-      Serial.println();
-    }
+    tap_count = (tap_count + 1) % (MAX_TAPS + 1);
+    last_tap = millis();
+    Serial.println("TAP (" + String(tap_count) + ")!");
+    Serial.println();
 #endif
 
   }
