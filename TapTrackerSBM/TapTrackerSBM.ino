@@ -36,6 +36,9 @@ char pass[] = "WPA PSK";           // your network password
 RestClient client = RestClient(SERVER);
 String response;
 
+static const char ntpServerName[] = "us.pool.ntp.org";
+const String timeZone = "America/Los_Angeles";  // List: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/
+
 // ====================== END Config ======================
 
 #define OLED_RESET 2
@@ -46,8 +49,6 @@ Adafruit_SSD1306 display(OLED_RESET);
 #endif
 
 // NTP Servers:
-static const char ntpServerName[] = "us.pool.ntp.org";
-const String timeZone = "America/Los_Angeles";  // List: https://garygregory.wordpress.com/2013/06/18/what-are-the-java-timezone-ids/
 const String months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 int last_offset;
 
@@ -97,7 +98,7 @@ void getCounts();
 void setup()
 {
   Serial.begin(74880);
-  Serial.print("ITS Tap Trackker - ");
+  Serial.print("ITS Tap Tracker - ");
 #ifndef SINGLE_BUTTON_MODE
   Serial.println("Multi Button Mode");
 #endif
@@ -325,7 +326,7 @@ void updateDisplay() {
 void tap() {
   if (millis() - last_tap > 250 && millis() - last_event > TAP_LOCKOUT) {
 #ifndef SINGLE_BUTTON_MODE
-    if (digitalRead(BTN1) == HIGH) {
+    if (digitalRead(BTN1) == LOW) {
       if (tap_count == 1) tap_count = 0;
       else tap_count = 1;
 
@@ -333,7 +334,7 @@ void tap() {
       Serial.println("TAP (1)!");
       Serial.println();
     }
-    else if (digitalRead(BTN1) == HIGH) {
+    else if (digitalRead(BTN2) == LOW) {
       if (tap_count == 2) tap_count = 0;
       else tap_count = 2;
 
