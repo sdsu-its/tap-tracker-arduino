@@ -25,6 +25,7 @@ char pass[] = "WPA PSK";           // your network password
 #define TAP_LOCKOUT 10000
 #define DISP_UPDATE 100
 #define FLASH_SPEED 250
+#define DEBOUNCE 50
 
 #define BTN1 13  // Only BTN1 and it's LEDs need to be defined for Single Button Mode
 
@@ -57,6 +58,12 @@ unsigned int udpPort = 8888;  // local port to listen for UDP packets
 
 volatile byte tap_count = 0;
 volatile unsigned int last_tap = 0;
+volatile unsigned long last_change = 0;
+volatile int last_b1_state = HIGH;
+
+#ifndef SINGLE_BUTTON_MODE
+volatile int last_b2_state = HIGH;
+#endif
 
 unsigned int last_event = 0;
 unsigned int last_display_update = 0;
@@ -125,7 +132,7 @@ void setup()
   digitalWrite(B1G, LOW);
   digitalWrite(B1R, HIGH);
 
-  attachInterrupt(digitalPinToInterrupt(BTN1), tap, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BTN1), tap, CHANGE);
 
 #ifndef SINGLE_BUTTON_MODE
   pinMode(BTN2, INPUT_PULLUP);
@@ -136,7 +143,7 @@ void setup()
   digitalWrite(B2G, LOW);
   digitalWrite(B2R, HIGH);
 
-  attachInterrupt(digitalPinToInterrupt(BTN2), tap, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BTN2), tap, CHANGE);
 #endif
 
   // We start by connecting to a WiFi network
@@ -324,17 +331,39 @@ void updateDisplay() {
 }
 
 void tap() {
-  if (millis() - last_tap > 250 && millis() - last_event > TAP_LOCKOUT) {
+  int b1_state = digitalRead(BTN1);
+
+  unsigned long delta = millis() - last_change;
+
+  if (b1_state != last_b1_state && delta > DEBOUNCE && millis() - last_event > TAP_LOCKOUT) {
+    if (b1_state == HIGH) {
 #ifndef SINGLE_BUTTON_MODE
-    if (digitalRead(BTN1) == LOW) {
       if (tap_count == 1) tap_count = 0;
       else tap_count = 1;
 
       last_tap = millis();
       Serial.println("TAP (1)!");
       Serial.println();
+#endif
+
+#ifdef SINGLE_BUTTON_MODE
+      tap_count = (tap_count + 1) % (MAX_TAPS + 1);
+      last_tap = millis();
+      Serial.println("TAP (" + String(tap_count) + ")!");
+      Serial.println();
+#endif
     }
-    else if (digitalRead(BTN2) == LOW) {
+
+    last_change = millis();
+    last_b1_state = b1_state;
+  }
+
+
+#ifndef SINGLE_BUTTON_MODE
+  int b2_state = digitalRead(BTN2);
+
+  if (b2_state != last_b2_state && delta > DEBOUNCE && millis() - last_event > TAP_LOCKOUT) {
+    if (b2_state == HIGH) {
       if (tap_count == 2) tap_count = 0;
       else tap_count = 2;
 
@@ -342,16 +371,10 @@ void tap() {
       Serial.println("TAP (2)!");
       Serial.println();
     }
-#endif
-
-#ifdef SINGLE_BUTTON_MODE
-    tap_count = (tap_count + 1) % (MAX_TAPS + 1);
-    last_tap = millis();
-    Serial.println("TAP (" + String(tap_count) + ")!");
-    Serial.println();
-#endif
-
+    last_change = millis();
+    last_b2_state = b2_state;
   }
+#endif
 }
 
 /* -------- Tap Tracker API Code ---------- */
