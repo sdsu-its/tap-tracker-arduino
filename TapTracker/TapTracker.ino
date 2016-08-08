@@ -22,10 +22,13 @@ char pass[] = "WPA PSK";           // your network password
 #define MAX_TAPS 2 // Used by Single Button Mode to determin the Maximum number of Tap Types
 
 #define SEND_DELAY 5000
-#define TAP_LOCKOUT 10000
+#define TAP_LOCKOUT 3000
 #define DISP_UPDATE 100
 #define FLASH_SPEED 250
 #define DEBOUNCE 50
+
+#define TYPE_1_LABEL "FIT"  // No More than 4 characters Each
+#define TYPE_2_LABEL "BB"   // No More than 4 characters Each
 
 #define BTN1 13  // Only BTN1 and it's LEDs need to be defined for Single Button Mode
 #define BTN2 12
@@ -315,7 +318,7 @@ void updateDisplay() {
   display.setCursor(0, 16);
   if (tap_count == 1) display.setTextColor(BLACK, WHITE);
   else display.setTextColor(WHITE);
-  display.print("1");
+  display.print(TYPE_1_LABEL);
   display.setTextColor(WHITE);
 
   display.print(":");
@@ -324,7 +327,7 @@ void updateDisplay() {
 
   if (tap_count == 2) display.setTextColor(BLACK, WHITE);
   else display.setTextColor(WHITE);
-  display.print("2");
+  display.print(TYPE_2_LABEL);
   display.setTextColor(WHITE);
 
   display.print(":");
